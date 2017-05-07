@@ -8,9 +8,8 @@ fn main() {
 
     let results = get_imports(&connection);
 
-    println!("Found {} imports", results.len());
+    println!("Found {} imports:", results.len());
     for import in results {
-        println!("{}", import.name);
-        println!("----------\n");
+        println!("  {}: {}", import.id, import.name);
     }
 }

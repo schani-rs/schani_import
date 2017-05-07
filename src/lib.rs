@@ -27,3 +27,11 @@ pub fn get_imports(conn: &MysqlConnection) -> Vec<Import> {
     imports.load::<Import>(conn)
         .expect("Error loading imports")
 }
+
+pub fn get_import(conn: &MysqlConnection, import_id: &i32) -> Import {
+    use self::schema::imports::dsl::*;
+
+    imports.find(import_id)
+        .get_result(conn)
+        .expect(&format!("Error loading import with id={}", import_id))
+}
