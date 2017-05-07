@@ -24,7 +24,6 @@ fn upload_data(import: Form<Import>) -> String {
 fn upload_image(file_id: &str, data: Data) -> String {
     print!("uploading image {}", file_id);
 
-    // TODO: check if `file_id` is valid
     // TODO: transfer file to the store
     // TODO: prevent directory traversals
     // TODO: save extension/type on data import
