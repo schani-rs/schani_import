@@ -8,7 +8,7 @@ use self::schani_import::{establish_db_connection, get_import};
 fn main() {
     let connection = establish_db_connection();
 
-    let id = args().nth(1).expect("publish_post requires a post id")
+    let id = args().nth(1).expect("get_import requires an import id")
         .parse::<i32>().expect("Invalid ID");
     let import = get_import(&connection, &id);
 
