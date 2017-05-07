@@ -1,17 +1,12 @@
 extern crate schani_import;
 extern crate diesel;
 
-use self::schani_import::*;
-use self::schani_import::models::*;
-use self::diesel::prelude::*;
+use self::schani_import::{establish_db_connection, get_imports};
 
 fn main() {
-    use schani_import::schema::imports::dsl::*;
+    let connection = establish_db_connection();
 
-    let connection = establish_connection();
-    let results = imports.filter(id.eq(1))
-        .load::<Import>(&connection)
-        .expect("Error loading imports");
+    let results = get_imports(&connection);
 
     println!("Found {} imports", results.len());
     for import in results {

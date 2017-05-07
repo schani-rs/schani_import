@@ -10,11 +10,20 @@ use diesel::mysql::MysqlConnection;
 use dotenv::dotenv;
 use std::env;
 
-pub fn establish_connection() -> MysqlConnection {
+use self::models::Import;
+
+pub fn establish_db_connection() -> MysqlConnection {
     dotenv().ok();
 
     let database_url = env::var("DATABASE_URL")
         .expect("DATABASE_URL must be set");
     MysqlConnection::establish(&database_url)
         .expect(&format!("Error connecting to {}", database_url))
+}
+
+pub fn get_imports(conn: &MysqlConnection) -> Vec<Import> {
+    use self::schema::imports::dsl::*;
+
+    imports.load::<Import>(conn)
+        .expect("Error loading imports")
 }
