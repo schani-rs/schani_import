@@ -11,6 +11,9 @@ services:
 
 cache: cargo
 
+install:
+  - cargo install diesel_cli
+
 before_script:
   # Prepare DB
   - psql -c 'create database schani_import;' -U postgres
