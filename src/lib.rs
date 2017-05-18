@@ -1,18 +1,20 @@
 #[macro_use]
-extern crate diesel_codegen;
-#[macro_use]
 extern crate diesel;
+#[macro_use]
+extern crate diesel_codegen;
 extern crate dotenv;
 
-pub mod schema;
 pub mod models;
+pub mod schema;
+mod messaging;
 
 use diesel::prelude::*;
 use diesel::pg::PgConnection;
 use dotenv::dotenv;
 use std::env;
 
-use self::models::{Import, NewImport};
+use messaging::send_amqp_message;
+use models::{Import, NewImport};
 
 pub fn establish_db_connection() -> PgConnection {
     dotenv().ok();
@@ -43,8 +45,12 @@ pub fn create_import<'a>(conn: &PgConnection, name: &'a str) -> Import {
 
     let new_import = NewImport { name: name };
 
-    diesel::insert(&new_import)
+    let import = diesel::insert(&new_import)
         .into(imports::table)
         .get_result(conn)
-        .expect("Error saving new import")
+        .expect("Error saving new import");
+
+    send_amqp_message();
+
+    import
 }
