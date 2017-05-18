@@ -1,0 +1,4 @@
+CREATE TABLE imports (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR NOT NULL
+)
