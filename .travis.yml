@@ -1,0 +1,31 @@
+language: rust
+rust:
+  - nightly
+
+branches:
+  only:
+  - master
+
+services:
+  - postgresql
+
+cache: cargo
+
+before_script:
+  # Prepare DB
+  - psql -c 'create database schani_import;' -U postgres
+
+script:
+  # Copy testing env file if one exists
+  - if [[ -f .env.testing ]]; then cp .env.testing .env; fi
+
+  # Migrate
+  - diesel migration run
+  - diesel migration redo
+
+  # Build
+  - cargo build --verbose
+
+  # Test
+  - cargo test --verbose
+
