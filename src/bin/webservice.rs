@@ -2,9 +2,11 @@
 #![plugin(rocket_codegen)]
 
 extern crate rocket;
+extern crate schani_import;
 
 use rocket::Data;
 use rocket::request::Form;
+use schani_import::*;
 
 #[derive(FromForm)]
 struct Import {
@@ -14,22 +16,21 @@ struct Import {
 #[post("/upload", data = "<import>")]
 fn upload_data(import: Form<Import>) -> String {
     let imported_file = import.get();
+    let conn = establish_db_connection();
 
-    // TODO: save data to local DB
+    let new_import = create_import(&conn, &imported_file.name);
 
-    format!("file {} saved", imported_file.name)
+    format!("import data {} saved for image {}", new_import.id, new_import.name)
 }
 
-#[post("/upload/<file_id>", data = "<data>")]
-fn upload_image(file_id: &str, data: Data) -> String {
-    print!("uploading image {}", file_id);
+#[post("/upload/<import_id>", data = "<data>")]
+fn upload_image(import_id: i32, data: Data) -> String {
+    println!("uploading image {}", import_id);
 
-    // TODO: transfer file to the store
-    // TODO: prevent directory traversals
-    // TODO: save extension/type on data import
-    data.stream_to_file(format!("/tmp/{}.NEF", file_id));
+    let conn = establish_db_connection();
+    let import = finish_import(&conn, import_id, &mut data.open());
 
-    format!("image {} uploaded successfully", file_id)
+    format!("image {} uploaded successfully", import_id)
 }
 
 fn main() {
