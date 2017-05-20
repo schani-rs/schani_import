@@ -11,6 +11,9 @@ use diesel::prelude::*;
 use diesel::pg::PgConnection;
 use dotenv::dotenv;
 use std::env;
+use std::hash;
+use std::hash::{Hasher, SipHasher};
+use std::io::Read;
 
 use self::models::{Import, NewImport};
 
@@ -24,9 +27,7 @@ pub fn establish_db_connection() -> PgConnection {
 pub fn get_imports(conn: &PgConnection) -> Vec<Import> {
     use self::schema::imports::dsl::*;
 
-    imports
-        .load::<Import>(conn)
-        .expect("Error loading imports")
+    imports.load::<Import>(conn).expect("Error loading imports")
 }
 
 pub fn get_import(conn: &PgConnection, import_id: &i32) -> Import {
@@ -47,4 +48,30 @@ pub fn create_import<'a>(conn: &PgConnection, name: &'a str) -> Import {
         .into(imports::table)
         .get_result(conn)
         .expect("Error saving new import")
+}
+
+pub fn delete_import(conn: &PgConnection, import_id: i32) -> Import {
+    use self::schema::imports::dsl::*;
+
+    diesel::delete(imports.filter(id.eq(import_id)))
+        .get_result(conn)
+        .expect("Could not delete import")
+}
+
+pub fn finish_import(conn: &PgConnection, import_id: i32, data: &mut Read) -> Import {
+    let import = delete_import(conn, import_id);
+
+    // TODO: push to processing queue
+    // TODO: transfer file to the store
+    // TODO: save extension/type on data import
+    println!("Image {} uploaded successfully", import.name);
+    let image_data = data.bytes();
+    let mut hasher = SipHasher::new();
+    for byte in image_data {
+        hasher.write_u8(byte.expect(""));
+    }
+    let hash = hasher.finish();
+    println!("image hash: {}", hash);
+
+    import
 }
