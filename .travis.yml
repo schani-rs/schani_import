@@ -14,7 +14,8 @@ services:
 cache: cargo
 
 install:
-  - cargo install diesel_cli --force
+  - cargo install diesel_cli || true
+  - diesel --version
 
 before_script:
   # Prepare DB
