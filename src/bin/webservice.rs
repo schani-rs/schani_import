@@ -30,7 +30,7 @@ fn upload_image(import_id: i32, data: Data) -> String {
     let conn = establish_db_connection();
     let import = finish_import(&conn, import_id, &mut data.open());
 
-    format!("image {} uploaded successfully", import_id)
+    format!("image {} uploaded successfully", import.id)
 }
 
 fn main() {

@@ -10,7 +10,7 @@ use self::tokio_core::net::TcpStream;
 use self::lapin::client::ConnectionOptions;
 use self::lapin::channel::{BasicPublishOptions, QueueDeclareOptions, BasicProperties};
 
-pub fn send_amqp_message() {
+pub fn send_processing_message(file_id: u64) {
     // create the reactor
     let mut core = Core::new().unwrap();
     let handle = core.handle();
@@ -18,7 +18,6 @@ pub fn send_amqp_message() {
 
     core.run(TcpStream::connect(&addr, &handle)
                  .and_then(|stream| {
-
                                // connect() returns a future of an AMQP Client
                                // that resolves once the handshake is done
                                lapin::client::Client::connect(stream, &ConnectionOptions::default())
@@ -42,7 +41,7 @@ pub fn send_amqp_message() {
                               println!("channel {} declared queue {}", id, "hello");
 
                               channel.basic_publish("raw",
-                                                    b"hello from schani",
+                                                    file_id.to_string().as_bytes(),
                                                     &BasicPublishOptions::default(),
                                                     BasicProperties::default())
                           })

@@ -16,7 +16,7 @@ use std::hash;
 use std::hash::{Hasher, SipHasher};
 use std::io::Read;
 
-use messaging::send_amqp_message;
+use messaging::send_processing_message;
 use models::{Import, NewImport};
 
 pub fn establish_db_connection() -> PgConnection {
@@ -46,12 +46,11 @@ pub fn create_import<'a>(conn: &PgConnection, name: &'a str) -> Import {
 
     let new_import = NewImport { name: name };
 
+    // TODO: save extension/type on data import
     let import = diesel::insert(&new_import)
         .into(imports::table)
         .get_result(conn)
         .expect("Error saving new import");
-
-    send_amqp_message();
 
     import
 }
@@ -67,17 +66,18 @@ pub fn delete_import(conn: &PgConnection, import_id: i32) -> Import {
 pub fn finish_import(conn: &PgConnection, import_id: i32, data: &mut Read) -> Import {
     let import = delete_import(conn, import_id);
 
-    // TODO: push to processing queue
-    // TODO: transfer file to the store
-    // TODO: save extension/type on data import
     println!("Image {} uploaded successfully", import.name);
     let image_data = data.bytes();
+    // TODO: transfer file to the store
+    // TODO: let Store create id/hash and use that instead
     let mut hasher = SipHasher::new();
     for byte in image_data {
         hasher.write_u8(byte.expect(""));
     }
-    let hash = hasher.finish();
-    println!("image hash: {}", hash);
+    let image_id = hasher.finish();
+    println!("image hash: {}", image_id);
+
+    send_processing_message(image_id);
 
     import
 }
