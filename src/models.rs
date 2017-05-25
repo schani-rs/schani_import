@@ -1,5 +1,6 @@
 use super::schema::imports;
 
+#[derive(Serialize)]
 #[derive(Queryable)]
 pub struct Import {
     pub id: i32,
