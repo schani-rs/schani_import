@@ -14,14 +14,23 @@ use schani_import::models::Import;
 #[derive(FromForm)]
 struct ImportData {
     name: String,
+    user_id: i32,
+    camera: String,
+    latitude: f64,
+    longitude: f64,
 }
 
 #[post("/upload", data = "<import>")]
 fn upload_data(import: Form<ImportData>) -> JSON<Import> {
-    let imported_file = import.get();
+    let imported_file: &ImportData = import.get();
     let conn = establish_db_connection();
 
-    let new_import = create_import(&conn, &imported_file.name);
+    let new_import = create_import(&conn,
+                                   &imported_file.name,
+                                   imported_file.user_id,
+                                   &imported_file.camera,
+                                   imported_file.latitude,
+                                   imported_file.longitude);
 
     JSON(new_import)
 }

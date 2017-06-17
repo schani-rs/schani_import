@@ -1,17 +1,20 @@
 extern crate amq_protocol;
 extern crate dotenv;
 extern crate futures;
+extern crate resolve;
 extern crate tokio_core;
 extern crate lapin_futures as lapin;
 
 use std::env;
+use std::net;
 use self::amq_protocol::types::FieldTable;
 use self::dotenv::dotenv;
 use self::futures::future::Future;
-use self::tokio_core::reactor::Core;
-use self::tokio_core::net::TcpStream;
 use self::lapin::client::ConnectionOptions;
 use self::lapin::channel::{BasicPublishOptions, QueueDeclareOptions, BasicProperties};
+use self::resolve::resolve_host;
+use self::tokio_core::reactor::Core;
+use self::tokio_core::net::TcpStream;
 
 pub fn send_processing_message(file_id: u64) {
     dotenv().ok();
@@ -19,7 +22,14 @@ pub fn send_processing_message(file_id: u64) {
     // create the reactor
     let mut core = Core::new().unwrap();
     let handle = core.handle();
-    let addr = env::var("AMQP_ADDRESS").expect("AMQP_ADDRESS must be set").parse().unwrap();
+    let host = env::var("AMQP_ADDRESS").expect("AMQP_ADDRESS must be set");
+    let host_addr = resolve_host(&host)
+        .expect("could not lookup host")
+        .last()
+        .unwrap();
+    let addr = net::SocketAddr::new(host_addr, 5672);
+
+    println!("connecting to AMQP service at {}", host_addr);
 
     core.run(TcpStream::connect(&addr, &handle)
                  .and_then(|stream| {
@@ -31,7 +41,7 @@ pub fn send_processing_message(file_id: u64) {
 
                                // create_channel returns a future that is resolved
                                // once the channel is successfully created
-                               client.create_channel()
+                               client.create_confirm_channel()
                            })
                  .and_then(|channel| {
             let id = channel.id;
@@ -43,13 +53,23 @@ pub fn send_processing_message(file_id: u64) {
             channel
                 .queue_declare("raw", &QueueDeclareOptions::default(), FieldTable::new())
                 .and_then(move |_| {
-                              println!("channel {} declared queue {}", id, "hello");
+                    println!("channel {} declared queue {}", id, "raw");
 
-                              channel.basic_publish("raw",
-                                                    file_id.to_string().as_bytes(),
-                                                    &BasicPublishOptions::default(),
-                                                    BasicProperties::default())
-                          })
+                    println!("attempting to push image_id {}", file_id);
+
+                    channel
+                        .basic_publish("raw",
+                                       file_id.to_string().as_bytes(),
+                                       &BasicPublishOptions::default(),
+                                       BasicProperties::default())
+                        .map(|confirmation| {
+                                 println!("publish got confirmation: {:?}", confirmation)
+                             })
+                        .and_then(move |_| {
+                                      println!("closing amqp connection …");
+                                      channel.close(200, "Bye".to_string())
+                                  })
+                })
         }))
-        .unwrap();
+        .expect("what what");
 }
