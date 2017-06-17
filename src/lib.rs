@@ -3,23 +3,29 @@ extern crate diesel;
 #[macro_use]
 extern crate diesel_codegen;
 extern crate dotenv;
+extern crate futures;
+extern crate hyper;
 extern crate serde;
-#[macro_use] extern crate serde_derive;
+extern crate serde_json;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde_urlencoded;
+extern crate tokio_core;
 
 pub mod models;
 pub mod schema;
 mod messaging;
+mod store;
 
 use diesel::prelude::*;
 use diesel::pg::PgConnection;
 use dotenv::dotenv;
 use std::env;
-use std::hash;
-use std::hash::{Hasher, SipHasher};
 use std::io::Read;
 
 use messaging::send_processing_message;
 use models::{Import, NewImport};
+use store::transfer_image_to_store;
 
 pub fn establish_db_connection() -> PgConnection {
     dotenv().ok();
@@ -43,10 +49,22 @@ pub fn get_import(conn: &PgConnection, import_id: &i32) -> Import {
         .expect(&format!("Error loading import with id={}", import_id))
 }
 
-pub fn create_import<'a>(conn: &PgConnection, name: &'a str) -> Import {
+pub fn create_import<'a>(conn: &PgConnection,
+                         name: &'a str,
+                         user_id: i32,
+                         camera: &'a str,
+                         latitude: f64,
+                         longitude: f64)
+                         -> Import {
     use schema::imports;
 
-    let new_import = NewImport { name: name };
+    let new_import = NewImport {
+        name: name,
+        user_id: user_id,
+        camera: camera,
+        latitude: latitude,
+        longitude: longitude,
+    };
 
     // TODO: save extension/type on data import
     let import = diesel::insert(&new_import)
@@ -69,14 +87,9 @@ pub fn finish_import(conn: &PgConnection, import_id: i32, data: &mut Read) -> Im
     let import = delete_import(conn, import_id);
 
     println!("Image {} uploaded successfully", import.name);
-    let image_data = data.bytes();
-    // TODO: transfer file to the store
-    // TODO: let Store create id/hash and use that instead
-    let mut hasher = SipHasher::new();
-    for byte in image_data {
-        hasher.write_u8(byte.expect(""));
-    }
-    let image_id = hasher.finish();
+
+    let image_id = transfer_image_to_store(&import, data).expect("transfer failed");
+
     println!("image hash: {}", image_id);
 
     send_processing_message(image_id);
