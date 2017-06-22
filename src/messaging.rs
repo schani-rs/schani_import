@@ -16,7 +16,7 @@ use self::resolve::resolve_host;
 use self::tokio_core::reactor::Core;
 use self::tokio_core::net::TcpStream;
 
-pub fn send_processing_message(file_id: u64) {
+pub fn send_processing_message(file_id: i32) {
     dotenv().ok();
 
     // create the reactor
