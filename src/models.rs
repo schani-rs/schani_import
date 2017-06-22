@@ -9,6 +9,7 @@ pub struct Import {
     pub camera: String,
     pub longitude: f64,
     pub latitude: f64,
+    pub raw_image_id: Option<i32>
 }
 
 #[derive(Insertable)]
