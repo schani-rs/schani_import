@@ -1,19 +1,7 @@
-#![feature(plugin, custom_derive)]
-#![plugin(rocket_codegen)]
-
 #[macro_use]
 extern crate log;
-extern crate rocket;
-extern crate rocket_contrib;
 extern crate schani_import;
 
-use rocket::Data;
-use rocket_contrib::JSON;
-use rocket::request::Form;
-use schani_import::*;
-use schani_import::models::Import;
-
-#[derive(FromForm)]
 struct ImportData {
     name: String,
     user_id: i32,
@@ -22,6 +10,7 @@ struct ImportData {
     longitude: f64,
 }
 
+/*
 #[post("/upload", data = "<import>")]
 fn upload_data(import: Form<ImportData>) -> JSON<Import> {
     let imported_file: &ImportData = import.get();
@@ -40,7 +29,9 @@ fn upload_data(import: Form<ImportData>) -> JSON<Import> {
 
     JSON(new_import)
 }
+*/
 
+/*
 #[post("/upload/<import_id>/raw", data = "<data>")]
 fn upload_raw_image(import_id: i32, data: Data) -> String {
     info!("uploading raw image {}", import_id);
@@ -55,7 +46,9 @@ fn upload_raw_image(import_id: i32, data: Data) -> String {
 
     format!("raw image {} uploaded successfully", import.id)
 }
+*/
 
+/*
 #[post("/upload/<import_id>/sidecar", data = "<data>")]
 fn upload_image(import_id: i32, data: Data) -> String {
     info!("uploading image {}", import_id);
@@ -66,9 +59,6 @@ fn upload_image(import_id: i32, data: Data) -> String {
 
     format!("image {} uploaded successfully", import.id)
 }
+*/
 
-fn main() {
-    rocket::ignite()
-        .mount("/", routes![upload_data, upload_raw_image, upload_image])
-        .launch();
-}
+fn main() {}

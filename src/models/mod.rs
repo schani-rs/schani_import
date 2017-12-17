@@ -1,4 +1,4 @@
-use super::schema::imports;
+use database::schema::imports;
 
 #[derive(Serialize)]
 #[derive(Queryable)]

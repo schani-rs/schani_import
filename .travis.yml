@@ -1,6 +1,7 @@
-sudo: required
 language: rust
 rust:
+  - stable
+  - beta
   - nightly
 
 branches:
@@ -8,8 +9,7 @@ branches:
   - master
 
 services:
-  - postgresql
-  - rabbitmq
+  - docker
 
 cache: cargo
 
@@ -18,13 +18,12 @@ install:
   - diesel --version
 
 before_script:
-  # Prepare DB
-  - psql -c 'create database schani_import;' -U postgres
-
-script:
-  # Copy testing env file if one exists
+# Copy testing env file if one exists
   - if [[ -f .env.testing ]]; then cp .env.testing .env; fi
 
+  - docker run --name schani_import_db --env-file .env -p 54322:5432 -d postgres
+
+script:
   # Migrate
   - diesel migration run
   - diesel migration redo
