@@ -7,6 +7,7 @@ authors = ["Christoph Wurst <christoph@winzerhof-wurst.at>"]
 amq-protocol = "^0.19"
 diesel = { version = "1.0.0-beta1", features = ["postgres"] }
 dotenv = "0.10.1"
+fern = "*"
 futures = "^0.1"
 gotham = { git = "https://github.com/gotham-rs/gotham.git", branch = "router-builder" }
 gotham_derive = { git = "https://github.com/gotham-rs/gotham.git", branch = "router-builder" }
