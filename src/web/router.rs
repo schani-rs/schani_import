@@ -42,6 +42,6 @@ pub fn build_app_router(datbase_url: &str) -> Router {
         route
             .post("/imports/:id/finish")
             .with_path_extractor::<ImportRequestPath>()
-            .to(ImportController::start_import);
+            .to(ImportController::finish_upload);
     })
 }

@@ -94,7 +94,7 @@ impl ImportService {
         import
     }
 
-    pub fn finish_import(&self, conn: &PgConnection, import_id: i32, data: &mut Read) -> Import {
+    pub fn finish_import(&self, conn: &PgConnection, import_id: i32) -> Import {
         let import = self.delete_import(conn, import_id);
 
         info!("image {} uploaded successfully", import.id);

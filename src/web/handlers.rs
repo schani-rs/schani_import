@@ -182,7 +182,23 @@ impl ImportController {
         Box::new(f)
     }
 
-    pub fn finish_upload(mut state: State) -> Box<HandlerFuture> {
-        unimplemented!();
+    pub fn finish_upload(state: State) -> Box<HandlerFuture> {
+        let id = ImportRequestPath::borrow_from(&state).id();
+        let imports = {
+            let import_service: &ImportServiceMiddlewareData =
+                state.borrow::<ImportServiceMiddlewareData>();
+            let conn = connection(&state);
+
+            import_service.service().finish_import(&conn, id)
+        };
+
+        let json = serde_json::to_string(&imports).unwrap();
+
+        let resp = create_response(
+            &state,
+            StatusCode::Ok,
+            Some((json.into_bytes(), mime::APPLICATION_JSON)),
+        );
+        Box::new(future::ok((state, resp)))
     }
 }
