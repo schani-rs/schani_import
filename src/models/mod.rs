@@ -1,6 +1,6 @@
 use database::schema::imports;
 
-#[derive(Queryable, Serialize)]
+#[derive(Serialize, Queryable)]
 pub struct Import {
     pub id: i32,
     pub title: Option<String>,

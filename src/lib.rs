@@ -12,6 +12,7 @@ extern crate hyper;
 extern crate lapin_futures as lapin;
 #[macro_use]
 extern crate log;
+extern crate mime;
 extern crate resolve;
 extern crate serde;
 #[macro_use]
@@ -25,3 +26,5 @@ mod messaging;
 mod models;
 mod service;
 mod web;
+
+pub use web::webservice::ImportWebService;

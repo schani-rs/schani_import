@@ -1,6 +1,12 @@
+extern crate dotenv;
 #[macro_use]
 extern crate log;
 extern crate schani_import;
+
+use std::env;
+
+use dotenv::dotenv;
+use schani_import::ImportWebService;
 
 struct ImportData {
     name: String,
@@ -61,4 +67,10 @@ fn upload_image(import_id: i32, data: Data) -> String {
 }
 */
 
-fn main() {}
+fn main() {
+    dotenv().ok();
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL required");
+    let web_service = ImportWebService::new(database_url.as_str());
+
+    web_service.run();
+}

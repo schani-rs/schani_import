@@ -6,9 +6,7 @@ use dotenv::dotenv;
 use futures::future::Future;
 use lapin;
 use lapin::client::ConnectionOptions;
-use lapin::channel::{BasicConsumeOptions, BasicGetOptions, BasicProperties, BasicPublishOptions,
-                     ConfirmSelectOptions, ExchangeBindOptions, ExchangeDeclareOptions,
-                     ExchangeDeleteOptions, ExchangeUnbindOptions, QueueBindOptions,
+use lapin::channel::{BasicProperties, BasicPublishOptions, ConfirmSelectOptions,
                      QueueDeclareOptions};
 use resolve::resolve_host;
 use tokio_core::reactor::Core;
