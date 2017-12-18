@@ -82,6 +82,18 @@ impl ImportService {
         import
     }
 
+    pub fn add_image(&self, conn: &PgConnection, import_id: i32, data: &[u8]) -> Import {
+        let import = self.get_import(conn, &import_id);
+
+        info!("got {} bytes image", data.len());
+
+        //let raw_image_id = transfer_raw_image_to_store(&import, data).expect("transfer failed");
+        //info!("transferred raw image: {}", raw_image_id);
+        //let import = save_raw_image_id(conn, import_id, raw_image_id);
+
+        import
+    }
+
     pub fn finish_import(&self, conn: &PgConnection, import_id: i32, data: &mut Read) -> Import {
         let import = self.delete_import(conn, import_id);
 
