@@ -33,15 +33,9 @@ impl ImportService {
     pub fn create_import<'a>(
         &self,
         conn: &PgConnection,
-        title: Option<String>,
-        user_id: i32,
+        new_import: NewImport,
     ) -> Import {
         use database::schema::imports;
-
-        let new_import = NewImport {
-            title: title,
-            user_id: user_id,
-        };
 
         // TODO: save extension/type on data import
         let import = diesel::insert_into(imports::table)

@@ -13,10 +13,25 @@ use models::{Import, NewImport};
 use super::extractors::ImportRequestPath;
 use super::middlewares::ImportServiceMiddlewareData;
 
+#[derive(Deserialize)]
+struct NewImportRequestBody {
+    title: Option<String>,
+    user_id: i32,
+}
+
+impl Into<NewImport> for NewImportRequestBody {
+    fn into(self) -> NewImport {
+        NewImport {
+            title: self.title,
+            user_id: self.user_id,
+        }
+    }
+}
+
 pub struct ImportController;
 
 impl ImportController {
-    pub fn get_imports(mut state: State) -> Box<HandlerFuture> {
+    pub fn get_imports(state: State) -> Box<HandlerFuture> {
         let imports = {
             let import_service: &ImportServiceMiddlewareData =
                 state.borrow::<ImportServiceMiddlewareData>();
@@ -36,7 +51,36 @@ impl ImportController {
     }
 
     pub fn start_import(mut state: State) -> Box<HandlerFuture> {
-        unimplemented!();
+        let f = Body::take_from(&mut state)
+            .concat2()
+            .then(move |raw_body| match raw_body {
+                Ok(json_chunk) => {
+                    let bytes = json_chunk.to_vec();
+                    let json = String::from_utf8(bytes).unwrap();
+                    let body: NewImportRequestBody = serde_json::from_str(json.as_str()).unwrap();
+                    let new_import = body.into();
+
+                    let import = {
+                        let image_service: &ImportServiceMiddlewareData =
+                            state.borrow::<ImportServiceMiddlewareData>();
+                        let conn = connection(&state);
+
+                        image_service.service().create_import(&conn, new_import)
+                    };
+
+                    let json = serde_json::to_string(&import).unwrap();
+
+                    let resp = create_response(
+                        &state,
+                        StatusCode::Ok,
+                        Some((json.into_bytes(), mime::APPLICATION_JSON)),
+                    );
+                    future::ok((state, resp))
+                }
+                Err(e) => future::err((state, e.into_handler_error())),
+            });
+
+        Box::new(f)
     }
 
     pub fn upload_raw_image(mut state: State) -> Box<HandlerFuture> {
