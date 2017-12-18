@@ -24,12 +24,12 @@ before_script:
   - docker run --name schani_import_db --env-file .env -p 54322:5432 -d postgres
 
 script:
+  # Build
+  - cargo build --verbose
+
   # Migrate
   - diesel migration run
   - diesel migration redo
-
-  # Build
-  - cargo build --verbose
 
   # Test
   - cargo test --verbose
