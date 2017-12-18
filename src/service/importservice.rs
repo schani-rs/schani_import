@@ -11,6 +11,10 @@ use models::{Import, NewImport};
 pub struct ImportService {}
 
 impl ImportService {
+    pub fn new() -> Self {
+        ImportService {}
+    }
+
     pub fn get_imports(&self, conn: &PgConnection) -> Vec<Import> {
         use database::schema::imports::dsl::*;
 

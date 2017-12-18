@@ -3,6 +3,10 @@ extern crate amq_protocol;
 extern crate diesel;
 extern crate dotenv;
 extern crate futures;
+extern crate gotham;
+#[macro_use]
+extern crate gotham_derive;
+extern crate gotham_middleware_diesel;
 extern crate hyper;
 extern crate lapin_futures as lapin;
 #[macro_use]

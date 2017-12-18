@@ -8,6 +8,9 @@ amq-protocol = "^0.19"
 diesel = { version = "1.0.0-beta1", features = ["postgres"] }
 dotenv = "0.10.1"
 futures = "^0.1"
+gotham = { git = "https://github.com/gotham-rs/gotham.git", branch = "router-builder" }
+gotham_derive = { git = "https://github.com/gotham-rs/gotham.git", branch = "router-builder" }
+gotham_middleware_diesel = { git = "https://github.com/ChristophWurst/gotham-middleware-diesel.git", branch = "schani_library" }
 hyper = "^0.11"
 lapin-futures = "^0.10"
 log = "*"
