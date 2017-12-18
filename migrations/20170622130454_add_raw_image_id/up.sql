@@ -1,2 +1,0 @@
-ALTER TABLE imports
-    ADD COLUMN raw_image_id INTEGER DEFAULT NULL

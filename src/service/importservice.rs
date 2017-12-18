@@ -29,20 +29,14 @@ impl ImportService {
     pub fn create_import<'a>(
         &self,
         conn: &PgConnection,
-        name: &'a str,
+        title: Option<String>,
         user_id: i32,
-        camera: &'a str,
-        latitude: f64,
-        longitude: f64,
     ) -> Import {
         use database::schema::imports;
 
         let new_import = NewImport {
-            name: name,
+            title: title,
             user_id: user_id,
-            camera: camera,
-            latitude: latitude,
-            longitude: longitude,
         };
 
         // TODO: save extension/type on data import
@@ -54,7 +48,7 @@ impl ImportService {
         import
     }
 
-    pub fn save_raw_image_id(&self, conn: &PgConnection, import_id: i32, raw_id: i32) -> Import {
+    pub fn save_raw_image_id(&self, conn: &PgConnection, import_id: i32, raw_id: String) -> Import {
         use database::schema::imports::dsl::*;
         diesel::update(imports.find(import_id))
             .set(raw_image_id.eq(raw_id))
@@ -83,7 +77,7 @@ impl ImportService {
     pub fn finish_import(&self, conn: &PgConnection, import_id: i32, data: &mut Read) -> Import {
         let import = self.delete_import(conn, import_id);
 
-        info!("image {} uploaded successfully", import.name);
+        info!("image {} uploaded successfully", import.id);
 
         //let image_id = transfer_sidecar_file_to_store(&import, data).expect("transfer failed");
 

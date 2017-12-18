@@ -1,23 +1,18 @@
 use database::schema::imports;
 
-#[derive(Serialize)]
-#[derive(Queryable)]
+#[derive(Queryable, Serialize)]
 pub struct Import {
     pub id: i32,
-    pub name: String,
+    pub title: Option<String>,
+    pub raw_image_id: Option<String>,
+    pub sidecar_id: Option<String>,
+    pub image_id: Option<String>,
     pub user_id: i32,
-    pub camera: String,
-    pub longitude: f64,
-    pub latitude: f64,
-    pub raw_image_id: Option<i32>
 }
 
 #[derive(Insertable)]
-#[table_name="imports"]
-pub struct NewImport<'a> {
-    pub name: &'a str,
+#[table_name = "imports"]
+pub struct NewImport {
+    pub title: Option<String>,
     pub user_id: i32,
-    pub camera: &'a str,
-    pub longitude: f64,
-    pub latitude: f64,
 }
