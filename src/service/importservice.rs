@@ -30,11 +30,7 @@ impl ImportService {
             .expect(&format!("Error loading import with id={}", import_id))
     }
 
-    pub fn create_import<'a>(
-        &self,
-        conn: &PgConnection,
-        new_import: NewImport,
-    ) -> Import {
+    pub fn create_import<'a>(&self, conn: &PgConnection, new_import: NewImport) -> Import {
         use database::schema::imports;
 
         // TODO: save extension/type on data import
@@ -62,8 +58,10 @@ impl ImportService {
             .expect("Could not delete import")
     }
 
-    pub fn add_raw_file(&self, conn: &PgConnection, import_id: i32, data: &mut Read) -> Import {
+    pub fn add_raw_file(&self, conn: &PgConnection, import_id: i32, data: &[u8]) -> Import {
         let import = self.get_import(conn, &import_id);
+
+        info!("got {} bytes raw image", data.len());
 
         //let raw_image_id = transfer_raw_image_to_store(&import, data).expect("transfer failed");
         //info!("transferred raw image: {}", raw_image_id);

@@ -30,15 +30,15 @@ pub fn build_app_router(datbase_url: &str) -> Router {
         route
             .request(vec![Method::Put], "/imports/:id/raw")
             .with_path_extractor::<ImportRequestPath>()
-            .to(ImportController::start_import);
+            .to(ImportController::upload_raw_image);
         route
             .request(vec![Method::Put], "/imports/:id/sidecar")
             .with_path_extractor::<ImportRequestPath>()
-            .to(ImportController::start_import);
+            .to(ImportController::upload_sidecar);
         route
             .request(vec![Method::Put], "/imports/:id/image")
             .with_path_extractor::<ImportRequestPath>()
-            .to(ImportController::start_import);
+            .to(ImportController::upload_image);
         route
             .post("/imports/:id/finish")
             .with_path_extractor::<ImportRequestPath>()

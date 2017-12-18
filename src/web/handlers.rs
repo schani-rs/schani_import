@@ -84,7 +84,36 @@ impl ImportController {
     }
 
     pub fn upload_raw_image(mut state: State) -> Box<HandlerFuture> {
-        unimplemented!();
+        let f = Body::take_from(&mut state)
+            .concat2()
+            .then(move |raw_body| match raw_body {
+                Ok(binary_chunk) => {
+                    let raw_bytes = binary_chunk.to_vec();
+                    let id = ImportRequestPath::borrow_from(&state).id();
+
+                    let import = {
+                        let image_service: &ImportServiceMiddlewareData =
+                            state.borrow::<ImportServiceMiddlewareData>();
+                        let conn = connection(&state);
+
+                        image_service
+                            .service()
+                            .add_raw_file(&conn, id, raw_bytes.as_slice())
+                    };
+
+                    let json = serde_json::to_string(&import).unwrap();
+
+                    let resp = create_response(
+                        &state,
+                        StatusCode::Ok,
+                        Some((json.into_bytes(), mime::APPLICATION_JSON)),
+                    );
+                    future::ok((state, resp))
+                }
+                Err(e) => future::err((state, e.into_handler_error())),
+            });
+
+        Box::new(f)
     }
 
     pub fn upload_sidecar(mut state: State) -> Box<HandlerFuture> {
