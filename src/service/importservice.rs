@@ -1,18 +1,22 @@
-use std::io::Read;
-
 use diesel;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
+use futures::Future;
+use hyper::Uri;
+use tokio_core::reactor::Handle;
 
 // use messaging::send_processing_message;
 use models::{Import, NewImport};
-// use service::store::transfer_raw_image_to_store;
+use schani_store_client::StoreClient;
 
-pub struct ImportService {}
+#[derive(Clone)]
+pub struct ImportService {
+    store_uri: Uri,
+}
 
 impl ImportService {
-    pub fn new() -> Self {
-        ImportService {}
+    pub fn new(uri: Uri) -> Self {
+        ImportService { store_uri: uri }
     }
 
     pub fn get_imports(&self, conn: &PgConnection) -> Vec<Import> {
@@ -47,7 +51,23 @@ impl ImportService {
         diesel::update(imports.find(import_id))
             .set(raw_image_id.eq(raw_id))
             .get_result(conn)
-            .expect("Could not delete import")
+            .expect("Could set raw image id")
+    }
+
+    pub fn save_sidecar_id(&self, conn: &PgConnection, import_id: i32, sc_id: String) -> Import {
+        use database::schema::imports::dsl::*;
+        diesel::update(imports.find(import_id))
+            .set(sidecar_id.eq(sc_id))
+            .get_result(conn)
+            .expect("Could not set sidecar id")
+    }
+
+    pub fn save_image_id(&self, conn: &PgConnection, import_id: i32, img_id: String) -> Import {
+        use database::schema::imports::dsl::*;
+        diesel::update(imports.find(import_id))
+            .set(image_id.eq(img_id))
+            .get_result(conn)
+            .expect("Could not set image id")
     }
 
     pub fn delete_import(&self, conn: &PgConnection, import_id: i32) -> Import {
@@ -58,40 +78,40 @@ impl ImportService {
             .expect("Could not delete import")
     }
 
-    pub fn add_raw_file(&self, conn: &PgConnection, import_id: i32, data: &[u8]) -> Import {
-        let import = self.get_import(conn, &import_id);
-
+    pub fn add_raw_file(
+        &self,
+        handle: &Handle,
+        data: Vec<u8>,
+    ) -> Box<Future<Item = String, Error = ()>> {
         info!("got {} bytes raw image", data.len());
 
-        //let raw_image_id = transfer_raw_image_to_store(&import, data).expect("transfer failed");
-        //info!("transferred raw image: {}", raw_image_id);
-        //let import = save_raw_image_id(conn, import_id, raw_image_id);
+        let store_client = StoreClient::new(self.store_uri.clone(), handle);
 
-        import
+        Box::new(store_client.upload_raw_image(data).map_err(|_| ()))
     }
 
-    pub fn add_sidecar(&self, conn: &PgConnection, import_id: i32, data: &[u8]) -> Import {
-        let import = self.get_import(conn, &import_id);
-
+    pub fn add_sidecar(
+        &self,
+        handle: &Handle,
+        data: Vec<u8>,
+    ) -> Box<Future<Item = String, Error = ()>> {
         info!("got {} bytes sidecar", data.len());
 
-        //let raw_image_id = transfer_raw_image_to_store(&import, data).expect("transfer failed");
-        //info!("transferred raw image: {}", raw_image_id);
-        //let import = save_raw_image_id(conn, import_id, raw_image_id);
+        let store_client = StoreClient::new(self.store_uri.clone(), handle);
 
-        import
+        Box::new(store_client.upload_sidecar(data).map_err(|_| ()))
     }
 
-    pub fn add_image(&self, conn: &PgConnection, import_id: i32, data: &[u8]) -> Import {
-        let import = self.get_import(conn, &import_id);
-
+    pub fn add_image(
+        &self,
+        handle: &Handle,
+        data: Vec<u8>,
+    ) -> Box<Future<Item = String, Error = ()>> {
         info!("got {} bytes image", data.len());
 
-        //let raw_image_id = transfer_raw_image_to_store(&import, data).expect("transfer failed");
-        //info!("transferred raw image: {}", raw_image_id);
-        //let import = save_raw_image_id(conn, import_id, raw_image_id);
+        let store_client = StoreClient::new(self.store_uri.clone(), handle);
 
-        import
+        Box::new(store_client.upload_image(data).map_err(|_| ()))
     }
 
     pub fn finish_import(&self, conn: &PgConnection, import_id: i32) -> Import {

@@ -5,11 +5,12 @@ use gotham::handler::{HandlerFuture, IntoHandlerError};
 use gotham::http::response::create_response;
 use gotham::state::{FromState, State};
 use gotham_middleware_diesel::state_data::connection;
+use gotham_middleware_tokio::TokioMiddlewareData;
 use hyper::{Body, StatusCode};
 use mime;
 use serde_json;
 
-use models::{Import, NewImport};
+use models::NewImport;
 use super::extractors::ImportRequestPath;
 use super::middlewares::ImportServiceMiddlewareData;
 
@@ -88,29 +89,46 @@ impl ImportController {
             .concat2()
             .then(move |raw_body| match raw_body {
                 Ok(binary_chunk) => {
-                    let raw_bytes = binary_chunk.to_vec();
                     let id = ImportRequestPath::borrow_from(&state).id();
 
-                    let import = {
+                    let save_raw_image = {
                         let image_service: &ImportServiceMiddlewareData =
                             state.borrow::<ImportServiceMiddlewareData>();
+                        let handle = state
+                            .borrow::<TokioMiddlewareData>()
+                            .handle()
+                            .handle()
+                            .expect("got no handle from remote");
                         let conn = connection(&state);
 
+                        let service = image_service.service().clone();
                         image_service
                             .service()
-                            .add_raw_file(&conn, id, raw_bytes.as_slice())
+                            .add_raw_file(&handle, binary_chunk.to_vec())
+                            .and_then(move |raw_image_id| {
+                                info!("uploaded raw image {}", raw_image_id);
+                                Ok(service.save_raw_image_id(&conn, id, raw_image_id))
+                            })
                     };
 
-                    let json = serde_json::to_string(&import).unwrap();
+                    let b: Box<HandlerFuture> = Box::new(
+                        save_raw_image
+                            .and_then(|import| {
+                                info!("raw image for import {} saved", import.id);
+                                let json = serde_json::to_string(&import).unwrap();
 
-                    let resp = create_response(
-                        &state,
-                        StatusCode::Ok,
-                        Some((json.into_bytes(), mime::APPLICATION_JSON)),
+                                let resp = create_response(
+                                    &state,
+                                    StatusCode::Ok,
+                                    Some((json.into_bytes(), mime::APPLICATION_JSON)),
+                                );
+                                future::ok((state, resp))
+                            })
+                            .map_err(|e| panic!(e)),
                     );
-                    future::ok((state, resp))
+                    b
                 }
-                Err(e) => future::err((state, e.into_handler_error())),
+                Err(e) => Box::new(future::err((state, e.into_handler_error()))),
             });
 
         Box::new(f)
@@ -124,26 +142,42 @@ impl ImportController {
                     let sidecar_bytes = binary_chunk.to_vec();
                     let id = ImportRequestPath::borrow_from(&state).id();
 
-                    let import = {
+                    let importing = {
                         let image_service: &ImportServiceMiddlewareData =
                             state.borrow::<ImportServiceMiddlewareData>();
+                        let handle = state
+                            .borrow::<TokioMiddlewareData>()
+                            .handle()
+                            .handle()
+                            .expect("got no handle from remote");
                         let conn = connection(&state);
 
+                        let service = image_service.service().clone();
                         image_service
                             .service()
-                            .add_sidecar(&conn, id, sidecar_bytes.as_slice())
+                            .add_sidecar(&handle, sidecar_bytes)
+                            .and_then(move |sidecar_id| {
+                                info!("uploaded sidecar {}", sidecar_id);
+                                Ok(service.save_sidecar_id(&conn, id, sidecar_id))
+                            })
                     };
 
-                    let json = serde_json::to_string(&import).unwrap();
-
-                    let resp = create_response(
-                        &state,
-                        StatusCode::Ok,
-                        Some((json.into_bytes(), mime::APPLICATION_JSON)),
+                    let b: Box<HandlerFuture> = Box::new(
+                        importing
+                            .and_then(|import| Ok(serde_json::to_string(&import).unwrap()))
+                            .and_then(|json| {
+                                let resp = create_response(
+                                    &state,
+                                    StatusCode::Ok,
+                                    Some((json.into_bytes(), mime::APPLICATION_JSON)),
+                                );
+                                future::ok((state, resp))
+                            })
+                            .map_err(|_| unimplemented!()),
                     );
-                    future::ok((state, resp))
+                    b
                 }
-                Err(e) => future::err((state, e.into_handler_error())),
+                Err(e) => Box::new(future::err((state, e.into_handler_error()))),
             });
 
         Box::new(f)
@@ -154,29 +188,45 @@ impl ImportController {
             .concat2()
             .then(move |raw_body| match raw_body {
                 Ok(binary_chunk) => {
-                    let image_bytes = binary_chunk.to_vec();
+                    let sidecar_bytes = binary_chunk.to_vec();
                     let id = ImportRequestPath::borrow_from(&state).id();
 
-                    let import = {
+                    let importing = {
                         let image_service: &ImportServiceMiddlewareData =
                             state.borrow::<ImportServiceMiddlewareData>();
+                        let handle = state
+                            .borrow::<TokioMiddlewareData>()
+                            .handle()
+                            .handle()
+                            .expect("got no handle from remote");
                         let conn = connection(&state);
 
+                        let service = image_service.service().clone();
                         image_service
                             .service()
-                            .add_image(&conn, id, image_bytes.as_slice())
+                            .add_image(&handle, sidecar_bytes)
+                            .and_then(move |sidecar_id| {
+                                info!("uploaded image {}", sidecar_id);
+                                Ok(service.save_image_id(&conn, id, sidecar_id))
+                            })
                     };
 
-                    let json = serde_json::to_string(&import).unwrap();
-
-                    let resp = create_response(
-                        &state,
-                        StatusCode::Ok,
-                        Some((json.into_bytes(), mime::APPLICATION_JSON)),
+                    let b: Box<HandlerFuture> = Box::new(
+                        importing
+                            .and_then(|import| Ok(serde_json::to_string(&import).unwrap()))
+                            .and_then(|json| {
+                                let resp = create_response(
+                                    &state,
+                                    StatusCode::Ok,
+                                    Some((json.into_bytes(), mime::APPLICATION_JSON)),
+                                );
+                                future::ok((state, resp))
+                            })
+                            .map_err(|_| unimplemented!()),
                     );
-                    future::ok((state, resp))
+                    b
                 }
-                Err(e) => future::err((state, e.into_handler_error())),
+                Err(e) => Box::new(future::err((state, e.into_handler_error()))),
             });
 
         Box::new(f)

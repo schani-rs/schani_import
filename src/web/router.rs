@@ -4,19 +4,23 @@ use gotham::router::builder::*;
 use gotham::router::route::dispatch::{finalize_pipeline_set, new_pipeline_set};
 use gotham::middleware::pipeline::new_pipeline;
 use gotham_middleware_diesel::DieselMiddleware;
+use gotham_middleware_tokio::TokioMiddleware;
 use hyper::Method;
+use tokio_core::reactor::Remote;
 
 use super::extractors::ImportRequestPath;
 use super::handlers::ImportController;
 use super::middlewares::ImportServiceMiddleware;
+use service::ImportService;
 
-pub fn build_app_router(datbase_url: &str) -> Router {
+pub fn build_app_router(datbase_url: &str, store_uri: &str, handle: Remote) -> Router {
     trace!("build pipelines");
     let pipelines = new_pipeline_set();
     let (pipelines, default) = pipelines.add(
         new_pipeline()
             .add(DieselMiddleware::<PgConnection>::new(datbase_url))
-            .add(ImportServiceMiddleware::new())
+            .add(ImportServiceMiddleware::new(ImportService::new(store_uri.parse().unwrap())))
+            .add(TokioMiddleware::new(handle))
             .build(),
     );
     let pipelines = finalize_pipeline_set(pipelines);

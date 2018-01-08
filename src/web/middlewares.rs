@@ -1,5 +1,4 @@
 use std::io;
-use std::sync::Arc;
 
 use gotham;
 use gotham::handler::HandlerFuture;
@@ -9,14 +8,12 @@ use gotham::state::State;
 use service::ImportService;
 
 pub struct ImportServiceMiddleware {
-    service: Arc<ImportService>,
+    service: ImportService,
 }
 
 impl ImportServiceMiddleware {
-    pub fn new() -> Self {
-        ImportServiceMiddleware {
-            service: Arc::new(ImportService::new()),
-        }
+    pub fn new(service: ImportService) -> Self {
+        ImportServiceMiddleware { service: service }
     }
 }
 
@@ -36,17 +33,17 @@ impl NewMiddleware for ImportServiceMiddleware {
     type Instance = ImportServiceMiddleware;
 
     fn new_middleware(&self) -> io::Result<Self::Instance> {
-        Ok(ImportServiceMiddleware::new())
+        Ok(ImportServiceMiddleware::new(self.service.clone()))
     }
 }
 
 #[derive(StateData)]
 pub struct ImportServiceMiddlewareData {
-    service: Arc<ImportService>,
+    service: ImportService,
 }
 
 impl ImportServiceMiddlewareData {
-    pub fn new(service: Arc<ImportService>) -> Self {
+    pub fn new(service: ImportService) -> Self {
         ImportServiceMiddlewareData { service: service }
     }
 

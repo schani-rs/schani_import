@@ -9,14 +9,16 @@ diesel = { version = "1.0.0-beta1", features = ["postgres"] }
 dotenv = "0.10.1"
 fern = "*"
 futures = "^0.1"
-gotham = { git = "https://github.com/gotham-rs/gotham.git", branch = "router-builder" }
-gotham_derive = { git = "https://github.com/gotham-rs/gotham.git", branch = "router-builder" }
-gotham_middleware_diesel = { git = "https://github.com/ChristophWurst/gotham-middleware-diesel.git", branch = "schani_library" }
+gotham = { git = "https://github.com/gotham-rs/gotham.git" }
+gotham_derive = { git = "https://github.com/gotham-rs/gotham.git" }
+gotham_middleware_diesel = { git = "https://github.com/ChristophWurst/gotham-middleware-diesel.git" }
+gotham_middleware_tokio = { git = "https://github.com/ChristophWurst/gotham-middleware-tokio.git" }
 hyper = "^0.11"
 lapin-futures = "^0.10"
 log = "*"
 mime = "*"
 resolve = "0.1.2"
+schani_store_client = { git = "https://github.com/schani-rs/schani_store_client.git" }
 serde = "^1.0"
 serde_derive = "^1.0"
 serde_json="^1.0"
