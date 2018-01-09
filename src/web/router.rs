@@ -13,13 +13,21 @@ use super::handlers::ImportController;
 use super::middlewares::ImportServiceMiddleware;
 use service::ImportService;
 
-pub fn build_app_router(datbase_url: &str, store_uri: &str, handle: Remote) -> Router {
+pub fn build_app_router(
+    datbase_url: &str,
+    store_uri: &str,
+    library_uri: &str,
+    handle: Remote,
+) -> Router {
     trace!("build pipelines");
     let pipelines = new_pipeline_set();
     let (pipelines, default) = pipelines.add(
         new_pipeline()
             .add(DieselMiddleware::<PgConnection>::new(datbase_url))
-            .add(ImportServiceMiddleware::new(ImportService::new(store_uri.parse().unwrap())))
+            .add(ImportServiceMiddleware::new(ImportService::new(
+                library_uri.parse().unwrap(),
+                store_uri.parse().unwrap(),
+            )))
             .add(TokioMiddleware::new(handle))
             .build(),
     );

@@ -234,21 +234,31 @@ impl ImportController {
 
     pub fn finish_upload(state: State) -> Box<HandlerFuture> {
         let id = ImportRequestPath::borrow_from(&state).id();
-        let imports = {
+        let importing = {
             let import_service: &ImportServiceMiddlewareData =
                 state.borrow::<ImportServiceMiddlewareData>();
+            let handle = state
+                .borrow::<TokioMiddlewareData>()
+                .handle()
+                .handle()
+                .expect("got no handle from remote");
             let conn = connection(&state);
 
-            import_service.service().finish_import(&conn, id)
+            import_service.service().finish_import(&conn, id, &handle)
         };
 
-        let json = serde_json::to_string(&imports).unwrap();
+        let f = importing
+            .and_then(|import| {
+                let json = serde_json::to_string(&import).unwrap();
 
-        let resp = create_response(
-            &state,
-            StatusCode::Ok,
-            Some((json.into_bytes(), mime::APPLICATION_JSON)),
-        );
-        Box::new(future::ok((state, resp)))
+                let resp = create_response(
+                    &state,
+                    StatusCode::Ok,
+                    Some((json.into_bytes(), mime::APPLICATION_JSON)),
+                );
+                future::ok((state, resp))
+            })
+            .map_err(|_| unimplemented!());
+        Box::new(f)
     }
 }

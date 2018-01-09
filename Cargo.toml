@@ -18,6 +18,7 @@ lapin-futures = "^0.10"
 log = "*"
 mime = "*"
 resolve = "0.1.2"
+schani_library_client = { git = "https://github.com/schani-rs/schani_library_client.git" }
 schani_store_client = { git = "https://github.com/schani-rs/schani_store_client.git" }
 serde = "^1.0"
 serde_derive = "^1.0"

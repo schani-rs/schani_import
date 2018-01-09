@@ -43,14 +43,19 @@ impl<'a> ImportWebService<'a> {
         let mut core = Core::new().unwrap();
         let addr = "0.0.0.0:8001".parse().unwrap();
         trace!("create router");
-        let router = build_app_router(self.database_url, "http://localhost:8000", core.remote());
+        let router = build_app_router(
+            self.database_url,
+            "http://localhost:8000",
+            "http://localhost:8002",
+            core.remote(),
+        );
         trace!("create server");
         let handle = core.handle();
         let server = Http::new()
             .serve_addr_handle(&addr, &handle, NewHandlerService::new(router))
             .unwrap();
 
-        info!("server listening on 0.0.0.0:8000");
+        info!("server listening on 0.0.0.0:8001");
         let handle2 = handle.clone();
         handle.spawn(
             server

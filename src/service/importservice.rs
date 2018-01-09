@@ -7,16 +7,21 @@ use tokio_core::reactor::Handle;
 
 // use messaging::send_processing_message;
 use models::{Import, NewImport};
+use schani_library_client::{LibraryClient, NewImageData};
 use schani_store_client::StoreClient;
 
 #[derive(Clone)]
 pub struct ImportService {
+    library_uri: Uri,
     store_uri: Uri,
 }
 
 impl ImportService {
-    pub fn new(uri: Uri) -> Self {
-        ImportService { store_uri: uri }
+    pub fn new(library_uri: Uri, store_uri: Uri) -> Self {
+        ImportService {
+            library_uri: library_uri,
+            store_uri: store_uri,
+        }
     }
 
     pub fn get_imports(&self, conn: &PgConnection) -> Vec<Import> {
@@ -114,17 +119,31 @@ impl ImportService {
         Box::new(store_client.upload_image(data).map_err(|_| ()))
     }
 
-    pub fn finish_import(&self, conn: &PgConnection, import_id: i32) -> Import {
+    pub fn finish_import(
+        &self,
+        conn: &PgConnection,
+        import_id: i32,
+        handle: &Handle,
+    ) -> Box<Future<Item = Import, Error = ()>> {
         let import = self.delete_import(conn, import_id);
 
-        info!("image {} uploaded successfully", import.id);
+        let lib_client = LibraryClient::new(self.library_uri.clone(), handle);
 
-        //let image_id = transfer_sidecar_file_to_store(&import, data).expect("transfer failed");
+        let data = NewImageData {
+            raw_id: import.raw_image_id.to_owned(),
+            sidecar_id: import.sidecar_id.to_owned(),
+            image_id: import.image_id.to_owned(),
+            user_id: import.user_id.to_owned(),
+        };
 
-        //info!("image id: {}", image_id);
+        let f = lib_client
+            .add_image(data)
+            .and_then(move |id| {
+                info!("image {} imported successfully", id);
+                Ok(import)
+            })
+            .map_err(|_| ());
 
-        //send_processing_message(image_id);
-
-        import
+        Box::new(f)
     }
 }

@@ -15,6 +15,7 @@ extern crate lapin_futures as lapin;
 extern crate log;
 extern crate mime;
 extern crate resolve;
+extern crate schani_library_client;
 extern crate schani_store_client;
 extern crate serde;
 #[macro_use]
