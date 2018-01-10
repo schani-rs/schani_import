@@ -22,6 +22,7 @@ before_script:
   - if [[ -f .env.testing ]]; then cp .env.testing .env; fi
 
   - docker run --name schani_import_db --env-file .env -p 54322:5432 -d postgres
+  # docker run --hostname schani_processing_queue -p 8081:15672 --name schani_processing_queue -p 5672:5672 -d rabbitmq:3-management
 
 script:
   # Build
