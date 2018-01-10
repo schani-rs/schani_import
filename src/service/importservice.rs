@@ -5,7 +5,7 @@ use futures::Future;
 use hyper::Uri;
 use tokio_core::reactor::Handle;
 
-// use messaging::send_processing_message;
+use messaging::send_processing_message;
 use models::{Import, NewImport};
 use schani_library_client::{LibraryClient, NewImageData};
 use schani_store_client::StoreClient;
@@ -125,7 +125,7 @@ impl ImportService {
         import_id: i32,
         handle: &Handle,
     ) -> Box<Future<Item = Import, Error = ()>> {
-        let import = self.delete_import(conn, import_id);
+        let import = self.get_import(conn, &import_id);
 
         let lib_client = LibraryClient::new(self.library_uri.clone(), handle);
 
@@ -140,6 +140,8 @@ impl ImportService {
             .add_image(data)
             .and_then(move |id| {
                 info!("image {} imported successfully", id);
+                send_processing_message(id);
+                info!("image id {} pushed to processing queue", id);
                 Ok(import)
             })
             .map_err(|_| ());
