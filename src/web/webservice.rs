@@ -12,12 +12,16 @@ use log::LevelFilter;
 
 pub struct ImportWebService<'a> {
     database_url: &'a str,
+    library_url: &'a str,
+    store_url: &'a str,
 }
 
 impl<'a> ImportWebService<'a> {
-    pub fn new(database_url: &'a str) -> Self {
+    pub fn new(database_url: &'a str, library_url: &'a str, store_url: &'a str) -> Self {
         ImportWebService {
             database_url: database_url,
+            library_url: library_url,
+            store_url: store_url,
         }
     }
 
@@ -41,12 +45,12 @@ impl<'a> ImportWebService<'a> {
         self.set_logging();
 
         let mut core = Core::new().unwrap();
-        let addr = "0.0.0.0:8001".parse().unwrap();
+        let addr = "0.0.0.0:8000".parse().unwrap();
         trace!("create router");
         let router = build_app_router(
             self.database_url,
-            "http://localhost:8000",
-            "http://localhost:8002",
+            self.store_url,
+            self.library_url,
             core.remote(),
         );
         trace!("create server");
@@ -55,7 +59,7 @@ impl<'a> ImportWebService<'a> {
             .serve_addr_handle(&addr, &handle, NewHandlerService::new(router))
             .unwrap();
 
-        info!("server listening on 0.0.0.0:8001");
+        info!("server listening on 0.0.0.0:8000");
         let handle2 = handle.clone();
         handle.spawn(
             server
