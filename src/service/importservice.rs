@@ -125,7 +125,7 @@ impl ImportService {
         import_id: i32,
         handle: &Handle,
     ) -> Box<Future<Item = Import, Error = ()>> {
-        let import = self.get_import(conn, &import_id);
+        let import = self.delete_import(conn, import_id);
 
         let lib_client = LibraryClient::new(self.library_uri.clone(), handle);
 

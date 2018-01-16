@@ -1,5 +1,5 @@
 use std::env;
-use std::net;
+use std::net::ToSocketAddrs;
 
 use amq_protocol::types::FieldTable;
 use dotenv::dotenv;
@@ -8,7 +8,6 @@ use lapin;
 use lapin::client::ConnectionOptions;
 use lapin::channel::{BasicProperties, BasicPublishOptions, ConfirmSelectOptions,
                      ExchangeDeclareOptions, QueueBindOptions, QueueDeclareOptions};
-use resolve::resolve_host;
 use tokio_core::reactor::Core;
 use tokio_core::net::TcpStream;
 
@@ -19,16 +18,16 @@ pub fn send_processing_message(file_id: i32) {
     let mut core = Core::new().unwrap();
     let handle = core.handle();
     let host = env::var("AMQP_ADDRESS").expect("AMQP_ADDRESS must be set");
-    let host_addr = resolve_host(&host)
-        .expect("could not lookup host")
-        .last()
-        .unwrap();
-    let addr = net::SocketAddr::new(host_addr, 5672);
+    let host_addr = (host.as_str(), 5672 as u16)
+        .to_socket_addrs()
+        .expect("could not resolve AMQP host")
+        .next()
+        .expect("could not resolve AMQP host");
 
     println!("connecting to AMQP service at {}", host_addr);
 
     core.run(
-        TcpStream::connect(&addr, &handle)
+        TcpStream::connect(&host_addr, &handle)
             .and_then(|stream| {
                 // connect() returns a future of an AMQP Client
                 // that resolves once the handshake is done
