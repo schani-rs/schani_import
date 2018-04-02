@@ -10,6 +10,8 @@ matrix:
 
 branches:
   only:
+  - staging
+  - trying
   - master
 
 services:
