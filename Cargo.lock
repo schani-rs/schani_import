@@ -404,27 +404,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "lapin-async"
-version = "0.10.0"
+version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "amq-protocol 0.19.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "cookie-factory 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "log 0.3.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "nom 3.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "sasl 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "lapin-futures"
-version = "0.10.0"
+version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "amq-protocol 0.19.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "bytes 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "cookie-factory 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures 0.1.20 (registry+https://github.com/rust-lang/crates.io-index)",
- "lapin-async 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "log 0.3.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "lapin-async 0.11.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "nom 3.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "tokio-io 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "tokio-timer 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -732,7 +731,7 @@ dependencies = [
  "gotham_middleware_diesel 0.1.0 (git+https://github.com/ChristophWurst/gotham-middleware-diesel.git)",
  "gotham_middleware_tokio 0.1.0 (git+https://github.com/ChristophWurst/gotham-middleware-tokio.git)",
  "hyper 0.11.25 (registry+https://github.com/rust-lang/crates.io-index)",
- "lapin-futures 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "lapin-futures 0.11.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "mime 0.3.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "schani_library_client 0.1.0 (git+https://github.com/schani-rs/schani_library_client.git)",
@@ -1135,8 +1134,8 @@ dependencies = [
 "checksum itoa 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)" = "c069bbec61e1ca5a596166e55dfe4773ff745c3d16b700013bcaff9a6df2c682"
 "checksum kernel32-sys 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "7507624b29483431c0ba2d82aece8ca6cdba9382bff4ddd0f7490560c056098d"
 "checksum language-tags 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "a91d884b6667cd606bb5a69aa0c99ba811a115fc68915e7056ec08a46e93199a"
-"checksum lapin-async 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)" = "1eea43a8d4489a50230e2e26af176a2ea2b72eeef8abc4b2d9ebbf062c80f987"
-"checksum lapin-futures 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)" = "050ad737d0ebe4a55735e4537768ea3bacc164da2e9add9283ed4625620c78f1"
+"checksum lapin-async 0.11.1 (registry+https://github.com/rust-lang/crates.io-index)" = "59cffea6249e21446e5004a220dba7f96cd065e0a0ad36249a98394830c2dd77"
+"checksum lapin-futures 0.11.1 (registry+https://github.com/rust-lang/crates.io-index)" = "aa2fbb4837cb9878a1f66d633ab2be93294c69b34f2e4bae025c7297c49564bf"
 "checksum lazy_static 0.2.11 (registry+https://github.com/rust-lang/crates.io-index)" = "76f033c7ad61445c5b347c7382dd1237847eb1bce590fe50365dcb33d546be73"
 "checksum lazy_static 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "c8f31047daa365f19be14b47c29df4f7c3b581832407daabe6ae77397619237d"
 "checksum lazycell 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)" = "a6f08839bc70ef4a3fe1d566d5350f519c5912ea86be0df1740a7d247c7fc0ef"
