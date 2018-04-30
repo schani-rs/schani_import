@@ -14,7 +14,7 @@ gotham_derive = { git = "https://github.com/gotham-rs/gotham.git" }
 gotham_middleware_diesel = { git = "https://github.com/ChristophWurst/gotham-middleware-diesel.git" }
 gotham_middleware_tokio = { git = "https://github.com/ChristophWurst/gotham-middleware-tokio.git" }
 hyper = "^0.11"
-lapin-futures = "^0.10"
+lapin-futures = "^0.11"
 log = "*"
 mime = "*"
 schani_library_client = { git = "https://github.com/schani-rs/schani_library_client.git" }
