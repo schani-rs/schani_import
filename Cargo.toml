@@ -8,7 +8,7 @@ amq-protocol = "^0.19"
 diesel = { version = "1.0.0-beta1", features = ["postgres"] }
 dotenv = "0.11.0"
 fern = "*"
-futures = "^0.1"
+futures = "^0.2"
 gotham = { git = "https://github.com/gotham-rs/gotham.git" }
 gotham_derive = { git = "https://github.com/gotham-rs/gotham.git" }
 gotham_middleware_diesel = { git = "https://github.com/ChristophWurst/gotham-middleware-diesel.git" }
